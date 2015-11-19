@@ -65,7 +65,7 @@ Class ServerGenerator {
         if ($aws_info['MaxCount'] < $aws_info['MinCount']) {
             return "MinCount cannot be greater than MaxCount";
         }
-        $this->logIt("Booting up servers " . implode($aws_info));
+        $this->logIt("Booting up servers " . implode("\n", $aws_info));
         $result =  $this->ec2->createInstance($aws_info);
         if ($result) {
             $this->logIt("Add to job queue");

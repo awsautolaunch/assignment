@@ -42,22 +42,12 @@ Class Ec2Client {
         return $this->terminateInstances(array('InstanceIds' => $instanceIDs));
     }
 
-    private function getInstancesDetails($reservations) {
+    public function getInstancesDetails($reservations, $detail='InstanceId') {
         $instanceIDs = array();
         foreach ($reservations as $reservation) {
             $instances = $reservation['Instances'];
             foreach ($instances as $instance) {
-
-/*
-                echo 'Instance Name: ' . $instanceName . PHP_EOL;
-                echo '---> State: ' . $instance['State']['Name'] . PHP_EOL;
-                echo '---> Instance ID: ' . $instance['InstanceId'] . PHP_EOL;
-                echo '---> Image ID: ' . $instance['ImageId'] . PHP_EOL;
-                echo '---> Private Dns Name: ' . $instance['PrivateDnsName'] . PHP_EOL;
-                echo '---> Instance Type: ' . $instance['InstanceType'] . PHP_EOL;
-                echo '---> Security Group: ' . $instance['SecurityGroups'][0]['GroupName'] . PHP_EOL;
-*/
-                $instanceIDs[] = $instance['InstanceId'];
+                $instanceIDs[] = $instance[$detail];
             }
 
         }
@@ -89,6 +79,27 @@ Class Ec2Client {
 
     public function describeInstances($filter = null) {
         return $this->make_call('ec2', 'describeInstances', 'Filters', $filter);
+    }
+
+    public function getInstanceIPs($instanceIDs) {
+        $filter = array(
+            array(
+                'Name' => 'instance-id',
+                'Values' => $instanceIDs
+            ),
+            array(
+                'Name' => 'instance-state-code',
+                'Values' => array(16)
+            )
+        );
+        $result = $this->describeInstances($filter);
+        if ($result === false) {
+            return false;
+        }
+
+        $reservations = $result->toArray();
+        $instanceIPs = $this->getInstancesDetails($reservations['Reservations'], 'PrivateIpAddress');
+        return $instanceIPs;
     }
 
     public function getInstanceIDs($role_name) {

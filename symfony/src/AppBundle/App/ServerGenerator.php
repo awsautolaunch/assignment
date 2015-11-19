@@ -64,12 +64,19 @@ Class ServerGenerator {
         if ($aws_info['MaxCount'] < $aws_info['MinCount']) {
             return "MinCount cannot be greater than MaxCount";
         }
-        $this->logIt("Booting up servers " . implode($aws_info));
         $result =  $this->ec2->createInstance($aws_info);
         if ($result) {
             $this->logIt("Add to job queue");
+            $this->addToJobQueue($role_name);
         }
         return $result;
+    }
+
+    private function addToJobQueue($role_name) {
+        $jobs_folder = "/var/www/html/jobs/";
+        $job_params = array("job_name" => $role_name);
+        $filename = "job_" . $role_name . '_' . intval(microtime(true));
+        file_put_contents($jobs_folder . $filename, json_encode($job_params));
     }
 
     public function takeDown() {

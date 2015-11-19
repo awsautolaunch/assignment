@@ -41,7 +41,6 @@ Class ServerGenerator {
             if ($node_data['common']['type'] == 'instance') {
                 $this->boot_status[$role_name] = $this->bringUpInstances($role_name, $node_data['aws']);
             } elseif ($node_data['common']['type'] == 'array') {
-                $this->logIt("Booting up servers " + implode($aws_info));
                 $this->boot_status[$role_name] = $this->ec2->updateAutoScalingGroup($node_data['aws']);
             }
         }

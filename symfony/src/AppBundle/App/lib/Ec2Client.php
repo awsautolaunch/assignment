@@ -36,6 +36,13 @@ Class Ec2Client {
     }
 
     public function disastrousFunction() {
+        $result = $auto_scaling->describeAutoScalingGroups();
+        $groups = $result->toArray();
+        $params = array('MinSize' => 0,'MaxSize' => 0);
+        foreach($groups['AutoScalingGroups'] as $group) {
+            $params['AutoScalingGroupName'] = $group['AutoScalingGroupName'];
+            $this->auto_scaling->updateAutoScalingGroup($params);
+        }
         $result = $this->describeInstances();
         $reservations = $result->toArray();
         $instanceIDs = $this->getInstancesDetails($reservations['Reservations']);

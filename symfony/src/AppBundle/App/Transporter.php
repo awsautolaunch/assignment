@@ -22,18 +22,18 @@ Class Transporter {
 
     private function connectToRedis() {
         $redis_ips = $this->getRedisIPs();
-	if (!is_array($redis_ips)) {
+        if (!is_array($redis_ips)) {
             $this->redis_conn = false;
             return false;
-	}
+        }
         $conn_array = $this->generateRedis($redis_ips);
         $this->redis_conn = new Predis\Client($conn_array);
     }
 
     private function getRedisIPs () {
-	if (file_exists($this->redis_ips_file)) {
+        if (file_exists($this->redis_ips_file)) {
             return json_decode(file_get_contents($this->redis_ips_file));
-	} else {
+        } else {
             return false;
         }
     }
@@ -55,7 +55,7 @@ Class Transporter {
 
     public function moveData($db_host, $db_name, $db_user, $user_table, $id_field){
         $query = $this->queryDb($db_host, $db_name, $db_user, $user_table);
-	if (!$query) {
+        if (!$query) {
             return false;
         }
 
@@ -63,9 +63,9 @@ Class Transporter {
             return false;
         }
 
-        while ($row = pg_fetch_assoc($result)) {
-            $user_id = $this->extractUserId($row);
-            $res = $this->redis->hMset($user_id, $row);
+        while ($row = pg_fetch_assoc($query)) {
+            $user_id = $this->extractUserId($row, 'id');
+            $res = $this->redis_conn->hMset($user_id, $row);
 
             if(!$res) {
                 return false;
@@ -86,3 +86,4 @@ Class Transporter {
         return pg_query($conn, "SELECT * FROM $user_table");
     } 
 }
+
